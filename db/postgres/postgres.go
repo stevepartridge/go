@@ -54,7 +54,8 @@ func (pg *Postgres) connect(database Database) *sql.DB {
 			database.Connection = conn
 			return database.Connection
 		} else {
-			panic(err)
+			log.IfError(err)
+			return nil
 		}
 	} else {
 		return database.Connection

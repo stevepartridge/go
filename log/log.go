@@ -148,6 +148,9 @@ func write(name string, v ...interface{}) {
 		case "fatal":
 			color = "red+b"
 			break
+		case "panic":
+			color = "red+b:white+h"
+			break
 		case "warning":
 			color = "yellow+b"
 			break
@@ -161,12 +164,19 @@ func write(name string, v ...interface{}) {
 			color = "cyan+hbi"
 			break
 		default:
-			color = "white+i"
+			color = "gray+u:white+h"
 			break
 		}
 		name = ansi.Color(" "+strings.ToUpper(name)+" ", color)
 
-		fmt.Printf("%s %s [%s] ( %s:%d )  %s", ts, Opts.Name, name, filepath.Base(file), line, fmt.Sprintln(v...))
+		// fileDisplay := filepath.Base(file)
+		fileDisplay := filepath.Clean(file)
+
+		// if Opts.OutputFilepath {
+		// 	fileDisplay = fileDisplay
+		// }
+
+		fmt.Printf("%s %s [%s] ( %s:%d )  %s", ts, Opts.Name, name, fileDisplay, line, fmt.Sprintln(v...))
 	}
 }
 
