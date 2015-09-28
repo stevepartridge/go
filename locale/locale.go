@@ -1,7 +1,7 @@
 package locale
 
 import (
-	"githost.in/dirtyhooligans/go/log"
+	"github.com/stevepartridge/go/log"
 )
 
 var ref = map[string]string{}
