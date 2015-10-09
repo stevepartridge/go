@@ -46,7 +46,7 @@ func (u *Utils) StringSliceToString(sl []string) string {
 	for i, s := range sl {
 		r = r + s
 		if i < (total - 1) {
-			r = ","
+			r = r + ","
 		}
 	}
 	return r + "}"
