@@ -1,8 +1,0 @@
-package: github.com/stevepartridge/go
-import:
-  - package: github.com/stevepartridge/go
-    subpackages:
-      - /db
-      - /env
-      - /locale
-      - /log
