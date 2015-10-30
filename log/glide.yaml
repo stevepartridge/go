@@ -1,0 +1,3 @@
+package: github.com/stevepartridge/go/log
+import:
+  - package: github.com/mgutz/ansi
