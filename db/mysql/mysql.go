@@ -3,7 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
+	_mysql "github.com/go-sql-driver/mysql"
 	"github.com/stevepartridge/go/log"
 )
 
@@ -18,6 +18,8 @@ type Database struct {
 }
 
 type Mysql struct{}
+
+type NullTime _mysql.NullTime
 
 var databases []Database
 
