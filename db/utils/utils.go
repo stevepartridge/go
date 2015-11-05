@@ -59,34 +59,42 @@ func (u *Utils) ResultInterfaceToTime(result interface{}) time.Time {
 	return time.Time{}
 }
 
+func (u *Utils) NullStringToTime(str sql.NullString) string {
+	if str.Valid {
+		if str.String != "0000-00-00 00:00:00" {
+			t, _ = time.Parse(time.RFC3339, str.String)
+			return t
+		}
+	}
+	return time.Time{}
+}
+
 func (u *Utils) NullStringToString(str sql.NullString) string {
 	if str.Valid {
 		return str.String
-	} else {
-		return ""
 	}
+	return ""
+
 }
 
 func (u *Utils) NullFloatToFloat(flt sql.NullFloat64) float64 {
 	if flt.Valid {
 		return flt.Float64
-	} else {
-		return 0
 	}
+	return 0
+
 }
 
 func (u *Utils) NullInt64ToInt64(i sql.NullInt64) int64 {
 	if i.Valid {
 		return i.Int64
-	} else {
-		return 0
 	}
+	return 0
 }
 
 func (u *Utils) NullBoolToBool(b sql.NullBool) bool {
 	if b.Valid {
 		return b.Bool
-	} else {
-		return false
 	}
+	return false
 }
