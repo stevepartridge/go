@@ -56,7 +56,7 @@ func (m *Mysql) connect(database Database) *sql.DB {
 			database.Name,
 		)
 
-		conn, err := sql.Open(database.Id+".mysql", connection)
+		conn, err := sql.Open("mysql", connection)
 		if err == nil {
 			database.Connection = conn
 			return database.Connection
@@ -72,5 +72,4 @@ func (m *Mysql) connect(database Database) *sql.DB {
 func (m *Mysql) Add(database Database) {
 	databases = append(databases, database)
 	log.Info("db.mysql.Add", database.Id)
-	sql.Register(database.Id+".mysql", &_mysql.MySQLDriver{})
 }
