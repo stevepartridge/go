@@ -62,7 +62,7 @@ func (u *Utils) ResultInterfaceToTime(result interface{}) time.Time {
 func (u *Utils) NullStringToTime(str sql.NullString) time.Time {
 	if str.Valid {
 		if str.String != "0000-00-00 00:00:00" {
-			t, _ := time.Parse(time.RFC3339, str.String)
+			t, _ := time.Parse("2006-01-02 15:04:05", str.String)
 			return t
 		}
 	}
