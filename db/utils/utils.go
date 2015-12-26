@@ -32,7 +32,7 @@ func (u *Utils) StringToIntSlice(s string) []int {
 }
 
 func (u *Utils) StringToStringSlice(s string) []string {
-	r := strings.Trim(s, "{}")
+	r := strings.Trim(s, "{\"\"}")
 	a := make([]string, 0, 10)
 	for _, s := range strings.Split(r, ",") {
 		a = append(a, s)
