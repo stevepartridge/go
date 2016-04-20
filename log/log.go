@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	MaxStackDepth = 25
+)
+
 var Levels = map[string]int{
 	"DEBUG":   0,
 	"INFO":    1,
@@ -97,6 +101,11 @@ func Debug(v ...interface{}) {
 	write("debug", v...)
 }
 
+func DebugWithStack(v ...interface{}) {
+	write("stacktrace")
+	write("debug", v...)
+}
+
 func AndPanic(err error) {
 	if err != nil {
 		write("panic", "", err)
@@ -163,10 +172,19 @@ func write(name string, v ...interface{}) {
 		case "debug":
 			color = "cyan+hbi"
 			break
+		case "stacktrace":
+			color = "white+b:magenta+h"
+			break
 		default:
 			color = "gray+u:white+h"
 			break
 		}
+
+		stacktrace := false
+		if name == "stacktrace" {
+			stacktrace = true
+		}
+
 		name = ansi.Color(" "+strings.ToUpper(name)+" ", color)
 
 		// fileDisplay := filepath.Base(file)
@@ -175,6 +193,20 @@ func write(name string, v ...interface{}) {
 		// if Opts.OutputFilepath {
 		// 	fileDisplay = fileDisplay
 		// }
+		if stacktrace {
+
+			stack := make([]uintptr, MaxStackDepth)
+			length := runtime.Callers(2, stack[:])
+			stack = stack[:length]
+			fmt.Printf("%s %s [%s] ( %s:%d )", ts, Opts.Name, name, fileDisplay, line)
+			spaces := " "
+			for i, _ := range stack {
+				_, file, line, _ = runtime.Caller(2 + (length - i))
+				fmt.Printf("%s%s:%d\n\n", spaces, file, line)
+				spaces = spaces + " "
+			}
+			return
+		}
 
 		fmt.Printf("%s %s [%s] ( %s:%d )  %s", ts, Opts.Name, name, fileDisplay, line, fmt.Sprintln(v...))
 	}
