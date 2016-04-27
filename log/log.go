@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mgutz/ansi"
 	syslog "log"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -26,9 +27,13 @@ var Levels = map[string]int{
 }
 
 type Options struct {
-	Name           string
-	Level          int
-	OutputFilepath string
+	Name   string
+	Level  int
+	Output string
+}
+
+type External interface {
+	Send([]byte) error
 }
 
 var Opts = Options{
@@ -36,6 +41,10 @@ var Opts = Options{
 	0,
 	"",
 }
+
+var external External
+var baseFilepath string
+var host string
 
 func Setup(opts *Options) {
 	syslog.SetFlags(syslog.LstdFlags)
@@ -47,10 +56,37 @@ func Setup(opts *Options) {
 		if opts.Level != 0 {
 			Opts.Level = opts.Level
 		}
-		if opts.OutputFilepath != "" {
-			Opts.OutputFilepath = opts.OutputFilepath
+		if opts.Output != "" {
+			Opts.Output = opts.Output
 		}
 	}
+
+	if opts.Output != "" {
+		switch Opts.Output {
+		case "papertrail":
+			external = NewPapertrail(
+				os.Getenv("PAPERTRAIL_DESTINATION"),
+			)
+		default:
+			external = nil
+		}
+	}
+	var err error
+
+	_, file, _, _ := runtime.Caller(0)
+
+	baseFilepath = filepath.Dir(file + "/../../../../../../")
+	fmt.Println("this file path:", baseFilepath)
+	if err != nil {
+		write("error", err)
+	}
+
+	host, err = os.Hostname()
+	if err != nil {
+		write("error", err)
+	}
+	fmt.Println("Host", host)
+
 	write("logsys", "Setup", "Log ready.")
 }
 
@@ -189,8 +225,9 @@ func write(name string, v ...interface{}) {
 
 		// fileDisplay := filepath.Base(file)
 		fileDisplay := filepath.Clean(file)
+		fileDisplay = strings.Replace(fileDisplay, baseFilepath, "", -1)
 
-		// if Opts.OutputFilepath {
+		// if Opts.Output {
 		// 	fileDisplay = fileDisplay
 		// }
 		if stacktrace {
@@ -208,7 +245,13 @@ func write(name string, v ...interface{}) {
 			return
 		}
 
-		fmt.Printf("%s %s [%s] ( %s:%d )  %s", ts, Opts.Name, name, fileDisplay, line, fmt.Sprintln(v...))
+		payload := fmt.Sprintf("%s %s | %s [%s] ( %s:%d )  %s", ts, host, Opts.Name, name, fileDisplay, line, fmt.Sprintln(v...))
+
+		if external != nil {
+			external.Send([]byte(payload))
+			return
+		}
+		fmt.Print(payload)
 	}
 }
 
