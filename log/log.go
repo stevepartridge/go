@@ -42,9 +42,28 @@ var Opts = Options{
 	"",
 }
 
-var external External
-var baseFilepath string
-var host string
+var (
+	external     External
+	baseFilepath string
+	host         string
+	err          error
+)
+
+func init() {
+	_, file, _, _ := runtime.Caller(0)
+
+	baseFilepath = filepath.Dir(file + "/../../../../../../")
+	fmt.Println("this file path:", baseFilepath)
+	if err != nil {
+		write("error", err)
+	}
+
+	host, err = os.Hostname()
+	if err != nil {
+		write("error", err)
+	}
+	fmt.Println("Host", host)
+}
 
 func Setup(opts *Options) {
 	syslog.SetFlags(syslog.LstdFlags)
@@ -71,21 +90,6 @@ func Setup(opts *Options) {
 			external = nil
 		}
 	}
-	var err error
-
-	_, file, _, _ := runtime.Caller(0)
-
-	baseFilepath = filepath.Dir(file + "/../../../../../../")
-	fmt.Println("this file path:", baseFilepath)
-	if err != nil {
-		write("error", err)
-	}
-
-	host, err = os.Hostname()
-	if err != nil {
-		write("error", err)
-	}
-	fmt.Println("Host", host)
 
 	write("logsys", "Setup", "Log ready.")
 }
@@ -225,7 +229,9 @@ func write(name string, v ...interface{}) {
 
 		// fileDisplay := filepath.Base(file)
 		fileDisplay := filepath.Clean(file)
-		fileDisplay = strings.Replace(fileDisplay, baseFilepath, "", -1)
+		if baseFilepath != "" {
+			fileDisplay = strings.Replace(fileDisplay, baseFilepath+"/", "", -1)
+		}
 
 		// if Opts.Output {
 		// 	fileDisplay = fileDisplay
