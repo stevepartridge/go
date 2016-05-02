@@ -3,7 +3,7 @@ package log
 import (
 	"fmt"
 	"github.com/mgutz/ansi"
-	syslog "log"
+	// syslog "log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -36,11 +36,7 @@ type External interface {
 	Send([]byte) error
 }
 
-var Opts = Options{
-	"log",
-	0,
-	"",
-}
+var Opts = new(Options)
 
 var (
 	external     External
@@ -66,31 +62,42 @@ func init() {
 }
 
 func Setup(opts *Options) {
-	syslog.SetFlags(syslog.LstdFlags)
 
-	if opts != nil {
-		if opts.Name != "" {
-			Opts.Name = opts.Name
-		}
-		if opts.Level != 0 {
-			Opts.Level = opts.Level
-		}
-		if opts.Output != "" {
-			Opts.Output = opts.Output
-		}
+	fmt.Println("opts", opts)
+	Opts = opts
+	fmt.Println("opts", Opts)
+
+	// syslog.SetFlags(syslog.LstdFlags)
+
+	// if opts != nil {
+	// 	if opts.Name != "" {
+	// 		Opts.Name = opts.Name
+	// 	}
+	// 	if opts.Level > -1 {
+	// 		Opts.Level = opts.Level
+	// 	}
+	// 	if opts.Output != "" {
+	// 		Opts.Output = opts.Output
+	// 	}
+	// }
+
+	if Opts.Name == "" {
+		Opts.Name = "log"
 	}
 
-	if opts.Output != "" {
-		switch Opts.Output {
-		case "papertrail":
-			external = NewPapertrail(
-				os.Getenv("PAPERTRAIL_DESTINATION"),
-			)
-		default:
-			external = nil
-		}
+	write("logsys", "Options", Opts)
+
+	switch Opts.Output {
+	case "papertrail":
+		fmt.Println("set output to external", Opts.Output, os.Getenv("PAPERTRAIL_DESTINATION"))
+		external = NewPapertrail(
+			os.Getenv("PAPERTRAIL_DESTINATION"),
+		)
+	default:
+		external = nil
 	}
 
+	write("logsys", "Output is set to:", opts.Output)
 	write("logsys", "Setup", "Log ready.")
 }
 
@@ -255,6 +262,9 @@ func write(name string, v ...interface{}) {
 
 		if external != nil {
 			external.Send([]byte(payload))
+			if name == "logsys" {
+				fmt.Println(payload)
+			}
 			return
 		}
 		fmt.Print(payload)
