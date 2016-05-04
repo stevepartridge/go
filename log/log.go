@@ -190,7 +190,7 @@ func write(name string, v ...interface{}) {
 	itoa(ts, now.Nanosecond()/1e3, 6)
 	*ts = append(*ts, ' ')
 
-	level := Levels[name]
+	level := Levels[strings.ToUpper(name)]
 	if level >= Opts.Level {
 
 		// Grab the reporting file and line number
