@@ -167,31 +167,41 @@ func AndPanicWithMessage(err error, msg string) {
 	}
 }
 
+var payload string
+var ts *[]byte
+var now time.Time
+var year, day, hour, min, sec int
+var month time.Month
+
 func write(name string, v ...interface{}) {
-	now := time.Now()
-	year, month, day := now.Date()
-	hour, min, sec := now.Clock()
-
-	// Inspired by/Borrowed from http://golang.org/src/log/log.go ~Line 80
-	ts := new([]byte)
-
-	itoa(ts, year, 4)
-	*ts = append(*ts, '/')
-	itoa(ts, int(month), 2)
-	*ts = append(*ts, '/')
-	itoa(ts, day, 2)
-	*ts = append(*ts, ' ')
-	itoa(ts, hour, 2)
-	*ts = append(*ts, ':')
-	itoa(ts, min, 2)
-	*ts = append(*ts, ':')
-	itoa(ts, sec, 2)
-	*ts = append(*ts, '.')
-	itoa(ts, now.Nanosecond()/1e3, 6)
-	*ts = append(*ts, ' ')
 
 	level := Levels[strings.ToUpper(name)]
+
+	// fmt.Println("level", level, Opts.Level, "name", strings.ToUpper(name))
+
 	if level >= Opts.Level {
+
+		now = time.Now()
+		year, month, day = now.Date()
+		hour, min, sec = now.Clock()
+
+		// Inspired by/Borrowed from http://golang.org/src/log/log.go ~Line 80
+		ts = new([]byte)
+
+		itoa(ts, year, 4)
+		*ts = append(*ts, '/')
+		itoa(ts, int(month), 2)
+		*ts = append(*ts, '/')
+		itoa(ts, day, 2)
+		*ts = append(*ts, ' ')
+		itoa(ts, hour, 2)
+		*ts = append(*ts, ':')
+		itoa(ts, min, 2)
+		*ts = append(*ts, ':')
+		itoa(ts, sec, 2)
+		*ts = append(*ts, '.')
+		itoa(ts, now.Nanosecond()/1e3, 6)
+		*ts = append(*ts, ' ')
 
 		// Grab the reporting file and line number
 		_, file, line, _ := runtime.Caller(2)
@@ -240,9 +250,6 @@ func write(name string, v ...interface{}) {
 			fileDisplay = strings.Replace(fileDisplay, baseFilepath+"/", "", -1)
 		}
 
-		// if Opts.Output {
-		// 	fileDisplay = fileDisplay
-		// }
 		if stacktrace {
 
 			stack := make([]uintptr, MaxStackDepth)
@@ -258,8 +265,9 @@ func write(name string, v ...interface{}) {
 			return
 		}
 
-		payload := fmt.Sprintf("%s %s | %s [%s] ( %s:%d )  %s", ts, host, Opts.Name, name, fileDisplay, line, fmt.Sprintln(v...))
+		payload = fmt.Sprintf("%s %s | %s [%s] ( %s:%d )  %s", ts, host, Opts.Name, name, fileDisplay, line, fmt.Sprintln(v...))
 
+		ts = nil
 		if external != nil {
 			external.Send([]byte(payload))
 			if name == "logsys" {
