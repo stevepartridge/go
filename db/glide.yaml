@@ -1,5 +1,0 @@
-package: github.com/stevepartridge/go/db
-import:
-  - package: github.com/stevepartridge/go/log
-  - package: github.com/lib/pq
-  - package: github.com/go-sql-driver/mysql
